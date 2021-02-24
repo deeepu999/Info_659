@@ -1,0 +1,162 @@
+
+# Title: Assignment-1 on Problem Understanding and Data Exploration
+#Name: Pradeep Kumar Kankipati; email_id: pk593@drexel.edu
+
+#1. Think Business: Framing the business problem
+
+#Domain: Automobile Business
+
+#Business problem:
+
+In the US, Used car dealers industry's revenue is over $120bn each year. So modeling the function to estimate the 
+worth of each car using the features can bring huge differnce in the used car sales.
+
+
+#Objective:
+
+Need to feature out what variables in the dataset weighs the most for determining the price of the used price and obtain the relationship between them.
+
+#2.Understand Data: Data source identification and understanding:
+
+#Concept of learning:
+
+   From the machine learning point of view, I need this model to predict the worth of the used car based on the given features of the car.
+   
+#Data attributes:
+  
+  The dataset was extracted from gitHub. It has seven variables namely "CarType","Age","Price","Mileage","Mazda6","Accord","Maxima".
+  
+  For a basic analyis, I am considering Age,Price & Mileage of the car as potentially relavant of the concept of learning.
+  
+class(dataName$Age)   --> numeric
+class(dataName$Mileage)--> numeric
+class(dataName$Price) --> numeric
+  
+```{r}
+dataName <- read.table("ThreeCars2017.csv", header=TRUE, sep=",")
+class(dataName$Age)
+class(dataName$Mileage)
+class(dataName$Price)
+
+```
+
+#Data instances:
+
+The below file is a csv file. We can observe they are assigned into different columns such as Age - 3,2 , Price -15.9,16.4 and Mileage: 17.8 and 19.0.
+
+It can be observed that increase in age and mileage of car results in decrease of price.   
+
+```{r}
+          
+dataName <- read.table("ThreeCars2017.csv", header=TRUE, sep=",")
+head(dataName)
+
+```
+
+#3:Data preparation, visualization and exploration
+#3.A.Data preparation and loading:
+
+For a basic analyis, I am considering Age,Price & Mileage of the car as potentially relavant of the concept of learning
+
+```{r}
+dataName1<- dataName[, names(dataName) %in% c("Age","Price","Mileage")]
+head(dataName1)
+```
+
+#3.B. Data distribution and anomalies
+
+plotting histograms for the individual columns
+
+```{r}
+hist(dataName1$Price, breaks=10, xlab="Price of a car (in $Thousand's)", main="car's price Distribution",ylab="No.of cars")
+hist(dataName1$Price, breaks=20, xlab="Price of a car (in $Thousand's)", main="car's price Distribution",ylab="No.of cars")
+hist(dataName1$Price, breaks=30, xlab="Price of a car (in $Thousand's)", main="car's price Distribution",ylab="No.of cars")
+```
+
+Above histogram of car's price has been examined with multiple break points and throughout that the data has normal disdribution at mean 15.
+1.Yes.The distribution seems acceptable as per my knowledge.
+2.yes.The data is distributed normally in the tested range.
+
+
+```{r}
+hist(dataName$Age, breaks=10, xlab="Age of the car(In Years)", main="Car's age distribution")
+hist(dataName$Age, breaks=20, xlab="Age of the car(In Years)", main="Car's age distribution")
+hist(dataName$Age, breaks=30, xlab="Age of the car(In Years)", main="Car's age distribution")
+```
+Above histogram of car's price has been examined with multiple break points and throughout that the data is right skewed.
+1.Yes.The distribution seems acceptable as per my knowledge.
+2.No.The data is right skewed.
+
+```{r}
+hist(dataName$Mileage, breaks=10, xlab="Car's Mileage(In Thousands)", main="Car's Mileage Distribution")
+hist(dataName$Mileage, breaks=50, xlab="Car's Mileage(In Thousands)", main="Car's Mileage Distribution")
+hist(dataName$Mileage, breaks=100, xlab="Car's Mileage(In Thousands)", main="Car's Mileage Distribution")
+```
+Above histogram of car's price has been examined with multiple break points and throughout that the data is right skewed.
+1.Yes.The distribution seems acceptable as per my knowledge.
+2.No.The data is right skewed.
+
+
+#3.C. Data distribution with log transformation
+
+Below is the logarthmic version of histogram for Age of used cars. The histogram for Age of used cars was highly right skewed.
+
+```{r}
+hist(log10(dataName$Age), breaks=10, xlab="log(Price)", main="log Age distribution")
+hist(log10(dataName$Age), breaks=20, xlab="log(Price)", main="log Age distribution")
+hist(log10(dataName$Age), breaks=100, xlab="log(Price)", main="log Age distribution")
+```
+The log version of Age distribution is looking normal than the original histogram.
+
+
+# 3.D. Examining multiple variables and regression
+
+```{r}
+plot(dataName$Age, dataName$Price,col ="#000000",pch=19, xlab="Age of a Car(in Years)", ylab="Corresponding car's price(In thousands of $)")
+mymodel <- lm(dataName$Price ~ dataName$Age)
+points(dataName$Age, mymodel$coefficients[1] + mymodel$coefficients[2] *
+dataName$Age, type="l", col="red")
+```
+
+ The car's price is linearly decreases with the increase in the car's age. The two variables are negatively correlated.
+
+
+```{r}
+
+plot(dataName$Mileage, dataName$Price,col ="#000000",pch=19, xlab="Mileage (in Thousands)", ylab="car's price(In thousands of $)")
+mymodel1 <- lm(dataName$Price ~ dataName$Mileage)
+points(dataName$Mileage, mymodel1$coefficients[1] + mymodel1$coefficients[2] *
+dataName$Mileage, type="l", col="green")
+
+```
+ The car's price is linearly decreases with the increase in the car's Mileage.The two variables are negatively correlated.
+ 
+
+#4:Discussion, understanding, and planning
+
+
+4.1: For My business problem, The price of the used cars various based multiple factors including Age,mileage and other factors.using the analysis the price of car can be predicted but having more data can result better estimation. 
+
+4.2: Yes. The data was already cleaning and corrected from the source.
+
+4.3: No. log tranformation is not needed because the values in each column are relatively in the same range.
+
+4.4: yes.Linear regression is suitable for the modeling as the variables are linearly dependent each other.
+
+
+4.5: yes. The current dataset has only 90 rows having more rows makes the prediction more reliable.
+
+
+4.6:yes. The additional data is needed for the project because the price of car depends on the multiple factors apart from age and mileage.
+
+
+4.7: From my analysis, I can say we need to use different modeling techinques to fit the data and get better interpretation of the price.
+
+
+
+
+
+
+
+
+

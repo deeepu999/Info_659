@@ -1,0 +1,256 @@
+
+#Assignment #2
+#Name: Pradeep KUmar Kankipati
+#Email ID: pk593@drexel.edu
+
+
+#A. Data Preparation
+#A.1. Data Loading and Initial Transformation
+
+
+Loading data from CSV file and transforming the default.payment.next.month variable into a nominal variable:
+
+```{r}
+library(ggplot2)
+cc <- read.csv("UCI_Credit_Card.csv")
+cc$default.payment.next.month <- factor(cc$default.payment.next.month,levels=c(0,1), labels=c("No","Yes"))
+```
+
+
+A.2. Demographic Variables
+```{r}
+ggplot(cc, aes(x=EDUCATION, fill=default.payment.next.month, color=default.payment.next.month)) +   geom_histogram(binwidth=0.5, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+
+
+```
+
+From the above plot,It can be observed that better the education the lower possibilty to default. Here we don't have much data for the 4,5 and 6 values.we have 1-Graduate, 2-University and 3-High School data and graduates have less changes to default than others.
+
+
+```{r}
+ggplot(cc, aes(x=MARRIAGE, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_histogram(binwidth=1, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+
+```
+
+From the Plot married person is more likely to get default also our data contain more number of singles than married but the defaulted persons in both the cases are almost same.From this we can observe that married persons has high chance to get default.  
+
+
+#A.3. Payment Status Variables
+
+```{r}
+ggplot(cc, aes(x=PAY_0, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_histogram(binwidth=1, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+
+ggplot(cc, aes(x=PAY_3, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_histogram(binwidth=1, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+
+ggplot(cc, aes(x=PAY_6, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_histogram(binwidth=1, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+
+```
+
+Here I am considering the following repayments:
+PAY_0: Repayment status in September, 2005 
+PAY_3: Repayment status in July, 2005 
+PAY_6: Repayment status in April, 2005
+
+where -1=pay duly, 1=payment delay for one month, 2=payment delay for two months, ... , 9=payment delay for nine months and above.  It can be observed that the default due to delay raised from month by month from one to three.
+
+
+#A.4. Transforming Nominal Variables
+
+Transforming related demographic variables into nominal values with labels 
+1.SEX: Gender (1=male, 2=female)
+2.EDUCATION: (1=graduate school, 2=university, 3=high school, 4=others, 5=unknown, 6=unknown)
+3.MARRIAGE: Marital status (1=married, 2=single, 3=others)
+
+```{r}
+cc$SEX <- factor(cc$SEX,levels=c(1,2), labels=c("Male", "Female"))
+cc$EDUCATION <- factor(cc$EDUCATION,levels=c(1,2,3,4,5,6), labels=c("graduate school","university","high school","others","unknown","unknown"))
+cc$MARRIAGE <- factor(cc$MARRIAGE,levels=c(1,2,3), labels=c("married","single","others"))
+```
+
+#viewing the transformed variables
+
+
+```{r}
+View(cc$SEX)
+View(cc$EDUCATION)
+View(cc$MARRIAGE)
+```
+
+#A.5. Selection of Training Data
+selecting 5000 random rows for training data.
+
+```{r}
+train <- cc[sample(nrow(cc), 5000), ]
+```
+
+# Double checking the training data with nrow(train) and/or View(train)
+
+```{r}
+nrow(train)
+View(train)
+```
+
+A.6. Selecting two rows of Testing Data from the data set
+
+```{r}
+test <- cc[c(27,21999),]    
+test
+```
+
+--
+B. Data Classification
+B.1. Naive Bayes using Demographic Variables
+
+Naive Bayes is an algorithm based on conditional probability with an assumption that all the variables are contiditionally independent to each other.
+
+Determining prior probabilities for the data set values.
+
+```{r}
+d_prob <- table(train$default.payment.next.month)
+d_prob
+d_prob <- d_prob/sum(d_prob)
+d_prob
+```
+
+probability of defaulting payment next month is 0.2156
+probability of defaulting payment next month is 0.7844
+
+Now we are modeling the nomial variables data using the Naive Bayes for which we are loading the e1071.
+
+```{r}
+library(e1071)
+nbDem <- naiveBayes(default.payment.next.month ~ SEX + EDUCATION + MARRIAGE, train)
+nbDem
+```
+
+
+```{r}
+predict(nbDem, test[1,])
+```
+
+Predicted result for the test data 1 is not default which is exactly matches with the original data set. 
+
+
+```{r}
+predict(nbDem, test[2,])
+```
+
+Predicted result for the test data 2 is not default which is exactly matches with the original data set. 
+
+
+B.2. Naive Bayes using Payment Status
+
+Building the Naive bayes model using the payment satus variables pay0,pay3 and pay6 
+
+
+```{r}
+nbPay <- naiveBayes(default.payment.next.month ~ PAY_0 + PAY_3 + PAY_6, train)
+nbPay
+```
+
+```{r}
+predict(nbPay, test[1,])
+```
+Predicted result for the test data 1 is not default which is exactly matches with the original data set. 
+
+```{r}
+predict(nbPay, test[2,])
+```
+Predicted result for the test data 2 is not default which is exactly matches with the original data set. 
+
+
+B.3. Smoothed Naive Bayes using Payment Status
+
+
+  Now we are smoothing the nominal variables with the laplace transform with constant =1.5  
+```{r}
+nbPay <- naiveBayes(default.payment.next.month ~ PAY_0 + PAY_3 + PAY_6, train, laplace=1.5)
+predict(nbPay, test[1,])
+```
+Predicted result for the test data 1 is not default which is exactly matches with the original data set.
+
+```{r}
+predict(nbPay, test[2,])
+```
+Predicted result for the test data 2 is not default which is exactly matches with the original data set.
+
+
+C. Classification with Decision Tree
+C.1. Basic Decision Tree :
+ 
+
+For supervised learning tasks the tree based algorithms are considered to be one the best algorithms.Now we are building a decision tree using up to three payment status variables pay0,pay3 and pay6 as predictors
+
+```{r}
+library("rpart")
+library("rpart.plot")
+dtPay <- rpart(default.payment.next.month ~ PAY_0 + PAY_3 + PAY_6,
+            method="class",
+            data=train, parms=list(split='information'), 
+            minsplit=20, cp=0.02)
+```
+
+Plotting decision tree using rpart.
+
+```{r}
+rpart.plot(dtPay, type=4, extra=1)
+```
+
+```{r}
+predict(dtPay, test[1,])
+```
+From the predicted result, The probability of defaulting for the next month is 0.1603122 and not defaulting is 0.8396
+
+```{r}
+predict(dtPay, test[2,])
+```
+From the predicted result, The probability of defaulting for the next month is 0.1603122 and not defaulting is 0.8396
+
+
+
+C.2. Decision Tree with a Different Complexity Parameter
+
+Rebuild the decision tree with a cp=0.001 for the same variables PAY_0,PAY_3 and PAY_6
+
+```{r}
+dtPay <- rpart(default.payment.next.month ~ PAY_0 + PAY_3 + PAY_6,
+            method="class",
+            data=train, parms=list(split='information'), 
+            minsplit=20, cp=0.001)
+```
+
+visualizing the decision tree using rpart.plot()
+
+```{r}
+rpart.plot(dtPay, type=4, extra=1)
+```
+
+ from the plot, as complexity parameter Cp decreases leads to increase in the number of the comparision in the model with more number of nodes.
+
+D.Conclusion :
+
+   Based on the predicted result of the two above models, The decision tree model does better in training based on the sampled 5000 rows and provided accurate prediction on the two test data compare to the Naive Bayes model.
+   While processing the low amount of data, Naive Bayes model can give better prediction, but in case of high volumes Decision tree model works better as it will decrease manual intervention.
+   The Other variables that are not modeled in this assignment are the annual income and location of the person, having these variables can be helpful to predict the default.payment.next.month.
+   
+
+
+
+
+
+
+
